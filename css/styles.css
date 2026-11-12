@@ -761,6 +761,16 @@ textarea:focus {
   font-size: 0.8rem;
   font-family: var(--font-mono);
   color: var(--text-primary);
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.data-table th.col-id,
+.data-table td.col-id {
+  width: 95px;
+  min-width: 95px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .list-cards {
@@ -868,6 +878,10 @@ textarea:focus {
   flex-direction: column;
   gap: 1.15rem;
   animation: modalScale 0.18s ease-out;
+}
+
+.modal-box.modal-box-sm {
+  max-width: 440px;
 }
 
 @keyframes modalScale {

@@ -137,7 +137,11 @@ const UI = {
     const restKeys = allKeys.filter(k => !prioritized.includes(k));
     const sortedHeaders = [...prioritized.filter(k => allKeys.includes(k)), ...restKeys];
 
-    const ths = sortedHeaders.map(h => `<th>${this.escapeHtml(h.toUpperCase())}</th>`).join('');
+    const ths = sortedHeaders.map(h => {
+      const isId = h.toLowerCase() === 'id';
+      const className = isId ? ' class="col-id"' : '';
+      return `<th${className}>${this.escapeHtml(h.toUpperCase())}</th>`;
+    }).join('');
 
     const trs = rows
       .map((row, idx) => {
@@ -147,9 +151,11 @@ const UI = {
         const tds = sortedHeaders
           .map(h => {
             const val = row[h];
+            const isId = h.toLowerCase() === 'id';
+            const className = isId ? ' class="col-id"' : '';
             let cellContent = '';
 
-            if (h === 'id') {
+            if (isId) {
               cellContent = `<span class="data-pill">#${this.escapeHtml(String(val ?? ''))}</span>`;
             } else if (h === 'titulo') {
               cellContent = `<strong>${this.escapeHtml(String(val ?? ''))}</strong>`;
@@ -159,7 +165,7 @@ const UI = {
               cellContent = this.escapeHtml(String(val ?? ''));
             }
 
-            return `<td>${cellContent}</td>`;
+            return `<td${className}>${cellContent}</td>`;
           })
           .join('');
 

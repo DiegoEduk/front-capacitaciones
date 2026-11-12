@@ -602,6 +602,32 @@
     </div>
   </div>
 
+  <!-- ============================================================= -->
+  <!-- MODAL: CONFIRMAR ELIMINACIÓN                                -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="modal-confirm-delete" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-delete-title">
+    <div class="modal-box modal-box-sm">
+      <div class="modal-header">
+        <h3 id="modal-confirm-delete-title" style="color: var(--accent-delete);">🗑️ Confirmar Eliminación</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-confirm-delete-modal" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+        <p style="margin: 0 0 0.5rem 0;">
+          ¿Estás seguro de que deseas eliminar permanentemente la capacitación <strong id="modal-delete-item-label" style="color: var(--text-primary);"></strong>?
+        </p>
+        <p style="margin: 0; font-size: 0.8rem; color: var(--accent-delete);">
+          Esta acción ejecutará una petición <code>DELETE</code> a Supabase y no se podrá deshacer.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-confirm-delete-modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btn-execute-confirm-delete">
+          <span class="btn-label">Sí, Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 

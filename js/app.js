@@ -113,7 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Actualizar datos de paginación
         const rowsCount = result.data.length;
-        const totalText = totalRecords !== null ? ` de ${totalRecords}` : '';
+        const totalPages = totalRecords !== null ? Math.max(1, Math.ceil(totalRecords / pageSize)) : null;
+        const totalText = totalRecords !== null ? ` de ${totalRecords} registros` : '';
         if (paginationInfo) {
           if (rowsCount === 0) {
             paginationInfo.textContent = `Sin registros para la página ${currentPage}`;
@@ -122,7 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         if (lblPageCurrent) {
-          lblPageCurrent.textContent = `Pág. ${currentPage}`;
+          lblPageCurrent.textContent = totalPages !== null
+            ? `Pág. ${currentPage} de ${totalPages}`
+            : `Pág. ${currentPage}`;
         }
 
         // Estado de botones de paginación
@@ -145,6 +148,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // MODAL: CONFIRMAR ELIMINACIÓN DE REGISTRO
+  // =========================================================================
+  const modalConfirmDelete = document.getElementById('modal-confirm-delete');
+  const btnCloseConfirmDeleteModal = document.getElementById('btn-close-confirm-delete-modal');
+  const btnCancelConfirmDeleteModal = document.getElementById('btn-cancel-confirm-delete-modal');
+  const btnExecuteConfirmDelete = document.getElementById('btn-execute-confirm-delete');
+  const modalDeleteItemLabel = document.getElementById('modal-delete-item-label');
+
+  let pendingDelete = { id: null, triggerBtn: null };
+
+  function openConfirmDeleteModal(id, triggerBtn) {
+    pendingDelete = { id, triggerBtn };
+    if (modalDeleteItemLabel) {
+      modalDeleteItemLabel.textContent = `con ID: #${id}`;
+    }
+    modalConfirmDelete.classList.remove('hidden');
+    btnExecuteConfirmDelete.focus();
+  }
+
+  function closeConfirmDeleteModal() {
+    modalConfirmDelete.classList.add('hidden');
+    pendingDelete = { id: null, triggerBtn: null };
+  }
+
+  if (btnCloseConfirmDeleteModal) btnCloseConfirmDeleteModal.addEventListener('click', closeConfirmDeleteModal);
+  if (btnCancelConfirmDeleteModal) btnCancelConfirmDeleteModal.addEventListener('click', closeConfirmDeleteModal);
+
+  modalConfirmDelete.addEventListener('click', e => {
+    if (e.target === modalConfirmDelete) closeConfirmDeleteModal();
+  });
+
+  if (btnExecuteConfirmDelete) {
+    btnExecuteConfirmDelete.addEventListener('click', async () => {
+      const { id, triggerBtn } = pendingDelete;
+      if (!id) {
+        closeConfirmDeleteModal();
+        return;
+      }
+
+      UI.setLoading(btnExecuteConfirmDelete, true, 'Eliminando...');
+      if (triggerBtn) UI.setLoading(triggerBtn, true, 'Eliminando...');
+
+      try {
+        const result = await CapacitacionesEndpoints.deleteByFilter({
+          column: 'id',
+          operator: 'eq',
+          value: id,
+        });
+
+        if (result.ok) {
+          UI.showToast(`Capacitación #${id} eliminada correctamente`, 'success');
+          closeConfirmDeleteModal();
+          await loadPaginatedTable(currentPage);
+        } else {
+          UI.showToast(`Error al eliminar: ${result.status} ${result.statusText}`, 'error');
+        }
+      } catch (err) {
+        UI.showToast(`Error de red al eliminar: ${err.message}`, 'error');
+      } finally {
+        UI.setLoading(btnExecuteConfirmDelete, false);
+        if (triggerBtn) UI.setLoading(triggerBtn, false);
+      }
+    });
+  }
+
   function attachRowActionEvents() {
     // Botones Editar por fila
     resMainTable.querySelectorAll('.btn-edit-row').forEach(btn => {
@@ -160,37 +229,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Botones Eliminar por fila
+    // Botones Eliminar por fila (Abre el modal de confirmación con el diseño de la app)
     resMainTable.querySelectorAll('.btn-del-row').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const rowId = btn.getAttribute('data-id');
         if (!rowId) {
           UI.showToast('No se identificó el ID de la fila a eliminar', 'error');
           return;
         }
 
-        const confirmed = window.confirm(`¿Estás seguro de eliminar permanentemente la capacitación con ID: ${rowId}?`);
-        if (!confirmed) return;
-
-        UI.setLoading(btn, true, 'Eliminando...');
-        try {
-          const result = await CapacitacionesEndpoints.deleteByFilter({
-            column: 'id',
-            operator: 'eq',
-            value: rowId,
-          });
-
-          if (result.ok) {
-            UI.showToast(`Capacitación #${rowId} eliminada correctamente`, 'success');
-            await loadPaginatedTable(currentPage);
-          } else {
-            UI.showToast(`Error al eliminar: ${result.status} ${result.statusText}`, 'error');
-          }
-        } catch (err) {
-          UI.showToast(`Error de red al eliminar: ${err.message}`, 'error');
-        } finally {
-          UI.setLoading(btn, false);
-        }
+        openConfirmDeleteModal(rowId, btn);
       });
     });
   }
