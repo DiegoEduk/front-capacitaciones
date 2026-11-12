@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capacitaciones API Studio — Supabase REST Client</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">⚡</div>
+        <div>
+          <h1>Capacitaciones</h1>
+          <span class="brand-sub">REST API Studio</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu" aria-label="Endpoints">
+        <p class="nav-label">Gestión Principal</p>
+        <a href="#ep-main-table" class="nav-item active" data-target="ep-main-table">
+          <span class="method-badge get">CRUD</span>
+          <span>Tabla &amp; Paginación</span>
+        </a>
+
+        <p class="nav-label">Consultas Individuales</p>
+        <a href="#ep-select-id" class="nav-item" data-target="ep-select-id">
+          <span class="method-badge get">GET</span>
+          <span>Select ID</span>
+        </a>
+        <a href="#ep-select-titulo" class="nav-item" data-target="ep-select-titulo">
+          <span class="method-badge get">GET</span>
+          <span>Select Título</span>
+        </a>
+        <a href="#ep-select-descripcion" class="nav-item" data-target="ep-select-descripcion">
+          <span class="method-badge get">GET</span>
+          <span>Select Descripción</span>
+        </a>
+        <a href="#ep-select-all" class="nav-item" data-target="ep-select-all">
+          <span class="method-badge get">GET</span>
+          <span>Select All (*)</span>
+        </a>
+        <a href="#ep-filters" class="nav-item" data-target="ep-filters">
+          <span class="method-badge get">GET</span>
+          <span>Range &amp; Filtros</span>
+        </a>
+
+        <p class="nav-label">Escritura &amp; Actualización</p>
+        <a href="#ep-post-minimal" class="nav-item" data-target="ep-post-minimal">
+          <span class="method-badge post">POST</span>
+          <span>Insertar (minimal)</span>
+        </a>
+        <a href="#ep-post-upsert" class="nav-item" data-target="ep-post-upsert">
+          <span class="method-badge post">POST</span>
+          <span>Upsert (merge)</span>
+        </a>
+        <a href="#ep-patch" class="nav-item" data-target="ep-patch">
+          <span class="method-badge patch">PATCH</span>
+          <span>Actualizar Registro</span>
+        </a>
+
+        <p class="nav-label">Eliminación</p>
+        <a href="#ep-delete" class="nav-item" data-target="ep-delete">
+          <span class="method-badge delete">DEL</span>
+          <span>Eliminar Registro</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button type="button" class="btn btn-secondary btn-full" id="btn-run-all-gets">
+          ▶ Ejecutar todos los GET
+        </button>
+        <p class="tech-note">HTML5 · CSS3 · Vanilla JS (fetch)</p>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <!-- Top Header & Connection Config -->
+      <header class="topbar">
+        <div class="topbar-title">
+          <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Abrir menú">☰</button>
+          <div>
+            <h2>Panel de Capacitaciones — Supabase PostgREST</h2>
+            <p class="subtitle">Tabla reactiva paginada con 10 rows por defecto, acciones por fila y consumo modular con <code>fetch()</code>.</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill" id="global-status">Listo</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="toggle-config-btn">⚙ Configuración API</button>
+        </div>
+      </header>
+
+      <!-- Collapsible API Config Panel -->
+      <section class="config-drawer hidden" id="config-drawer">
+        <div class="config-grid">
+          <div class="field">
+            <label for="cfg-url">Base Endpoint URL</label>
+            <input type="url" id="cfg-url" value="https://frkvnjqxqlhqussxbtut.supabase.co/rest/v1/capacitaciones" />
+          </div>
+          <div class="field">
+            <label for="cfg-apikey">Supabase Anon Key (<code>apikey</code> &amp; <code>Bearer</code>)</label>
+            <input type="text" id="cfg-apikey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZya3ZuanF4cWxocXVzc3hidHV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0OTQ5OTEsImV4cCI6MjExMDA3MDk5MX0.y35XDvlH37TOFPIXMtT-0RF-hXf5lquJGhDRohMBdkc" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Endpoints Container -->
+      <div class="endpoints-stack">
+
+        <!-- ============================================================= -->
+        <!-- TABLA PRINCIPAL PAGINADA CON ACCIONES Y BOTÓN DE INSERCIÓN   -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card highlight-card" id="ep-main-table">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <span class="method-badge patch">PATCH</span>
+              <span class="method-badge delete">DELETE</span>
+              <h3>Gestión de Capacitaciones — Tabla Paginada (10 filas)</h3>
+              <code class="endpoint-path">Range: <span id="lbl-range-current">0-9</span></code>
+            </div>
+            <p class="card-desc">
+              Visualiza los registros en tiempo real paginados por defecto de 10 en 10. Cada fila cuenta con botones dedicados de <strong>Editar (PATCH)</strong> y <strong>Eliminar (DELETE)</strong>.
+            </p>
+          </div>
+
+          <!-- Barra de acción superior: Botón Insertar + Controles de recarga -->
+          <div class="table-toolbar">
+            <div class="toolbar-left">
+              <button type="button" class="btn btn-primary" id="btn-open-insert-modal">
+                <span aria-hidden="true">➕</span>
+                <span class="btn-label">Insertar Nueva Capacitación</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-table" title="Recargar página actual">
+                🔄 Refrescar
+              </button>
+            </div>
+            <div class="toolbar-right">
+              <label for="select-page-size" class="page-size-label">Filas por página:</label>
+              <select id="select-page-size" class="select-compact">
+                <option value="5">5</option>
+                <option value="10" selected>10 (por defecto)</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Panel contenedor de la tabla de datos -->
+          <div class="result-panel" id="res-main-table">
+            <div class="empty-state">Cargando registros paginados...</div>
+          </div>
+
+          <!-- Barra de paginación inferior -->
+          <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">Mostrando filas 0 - 9</div>
+            <div class="pagination-controls">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-page-first" title="Primera página">«</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-page-prev" title="Página anterior">‹ Anterior</button>
+              <span class="page-indicator" id="lbl-page-current">Pág. 1</span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-page-next" title="Página siguiente">Siguiente ›</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 1. GET ?select=id                                            -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-select-id">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <h3>1. Obtener solo IDs</h3>
+              <code class="endpoint-path">?select=id</code>
+            </div>
+            <p class="card-desc">Consulta únicamente la columna <code>id</code> de todos los registros en <code>capacitaciones</code>.</p>
+          </div>
+          <form class="card-controls" id="form-select-id">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-label">Consultar IDs</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-clear" data-result="res-select-id">Limpiar</button>
+          </form>
+          <div class="result-panel" id="res-select-id">
+            <div class="empty-state">Presiona <strong>Consultar IDs</strong> para ejecutar el endpoint.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 2. GET ?select=titulo                                        -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-select-titulo">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <h3>2. Obtener solo Títulos</h3>
+              <code class="endpoint-path">?select=titulo</code>
+            </div>
+            <p class="card-desc">Consulta únicamente la columna <code>titulo</code> de la tabla <code>capacitaciones</code>.</p>
+          </div>
+          <form class="card-controls" id="form-select-titulo">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-label">Consultar Títulos</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-clear" data-result="res-select-titulo">Limpiar</button>
+          </form>
+          <div class="result-panel" id="res-select-titulo">
+            <div class="empty-state">Presiona <strong>Consultar Títulos</strong> para ejecutar el endpoint.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 3. GET ?select=descripcion                                   -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-select-descripcion">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <h3>3. Obtener solo Descripciones</h3>
+              <code class="endpoint-path">?select=descripcion</code>
+            </div>
+            <p class="card-desc">Consulta únicamente la columna <code>descripcion</code> de la tabla <code>capacitaciones</code>.</p>
+          </div>
+          <form class="card-controls" id="form-select-descripcion">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-label">Consultar Descripciones</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-clear" data-result="res-select-descripcion">Limpiar</button>
+          </form>
+          <div class="result-panel" id="res-select-descripcion">
+            <div class="empty-state">Presiona <strong>Consultar Descripciones</strong> para ejecutar el endpoint.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 4. GET ?select=*                                             -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-select-all">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <h3>4. Obtener Todos los Campos</h3>
+              <code class="endpoint-path">?select=*</code>
+            </div>
+            <p class="card-desc">Obtiene todas las columnas y registros completos de <code>capacitaciones</code>.</p>
+          </div>
+          <form class="card-controls" id="form-select-all">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-label">Consultar Todo (*)</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-clear" data-result="res-select-all">Limpiar</button>
+          </form>
+          <div class="result-panel" id="res-select-all">
+            <div class="empty-state">Presiona <strong>Consultar Todo (*)</strong> para listar todos los registros.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 5. GET Range + Filters + Arrays + Logical Operators          -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-filters">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge get">GET</span>
+              <h3>5. Paginación y Filtros Avanzados (PostgREST)</h3>
+              <code class="endpoint-path">Header: Range + Query Filters</code>
+            </div>
+            <p class="card-desc">Construye consultas con cabecera <code>Range</code>, selección de columnas y operadores (<code>eq</code>, <code>gt</code>, <code>lt</code>, <code>gte</code>, <code>lte</code>, <code>like</code>, <code>ilike</code>, <code>is</code>, <code>in</code>, <code>neq</code>, <code>cs</code>, <code>cd</code>, <code>not.like</code>, <code>or</code>).</p>
+          </div>
+
+          <form class="endpoint-form" id="form-filters">
+            <div class="form-row three-cols">
+              <div class="field">
+                <label for="flt-range-start">Range Inicio</label>
+                <input type="number" id="flt-range-start" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label for="flt-range-end">Range Fin</label>
+                <input type="number" id="flt-range-end" min="0" value="9" />
+              </div>
+              <div class="field">
+                <label for="flt-select">Columnas (<code>select</code>)</label>
+                <input type="text" id="flt-select" value="*" placeholder="*, id,titulo" />
+              </div>
+            </div>
+
+            <div class="builder-box">
+              <div class="builder-header">
+                <span>Filtros por Columna</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-add-filter">+ Agregar filtro</button>
+              </div>
+              <div id="filters-list" class="dynamic-rows"></div>
+            </div>
+
+            <div class="field">
+              <label for="flt-or">Operador lógico <code>or</code> (opcional)</label>
+              <input type="text" id="flt-or" placeholder="Ej: (titulo.ilike.*JS*,id.eq.1)" />
+              <small class="hint">Formato PostgREST: <code>(titulo.eq.React,id.gt.2)</code></small>
+            </div>
+
+            <div class="card-controls">
+              <button type="submit" class="btn btn-primary">
+                <span class="btn-label">Ejecutar Consulta Filtrada</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-filters">Restablecer</button>
+              <button type="button" class="btn btn-ghost btn-clear" data-result="res-filters">Limpiar Resultado</button>
+            </div>
+          </form>
+
+          <div class="result-panel" id="res-filters">
+            <div class="empty-state">Configura el rango o filtros y presiona <strong>Ejecutar Consulta Filtrada</strong>.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 6. POST Insertar (Prefer: return=minimal)                     -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-post-minimal">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge post">POST</span>
+              <h3>6. Insertar Capacitación</h3>
+              <code class="endpoint-path">Prefer: return=minimal</code>
+            </div>
+            <p class="card-desc">Crea un registro enviando JSON con la cabecera <code>Prefer: return=minimal</code>.</p>
+          </div>
+
+          <form class="endpoint-form" id="form-post-minimal">
+            <div class="form-row two-cols">
+              <div class="field">
+                <label for="post-min-titulo">Título <span class="req">*</span></label>
+                <input type="text" id="post-min-titulo" required placeholder="Ej: Introducción a APIs REST" />
+              </div>
+              <div class="field">
+                <label for="post-min-descripcion">Descripción</label>
+                <input type="text" id="post-min-descripcion" placeholder="Ej: Curso práctico con fetch nativo" />
+              </div>
+            </div>
+
+            <div class="builder-box">
+              <div class="builder-header">
+                <span>Campos adicionales personalizados (opcional)</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-add-post-min-field">+ Agregar campo</button>
+              </div>
+              <div id="post-min-extra-fields" class="dynamic-rows"></div>
+            </div>
+
+            <div class="card-controls">
+              <button type="submit" class="btn btn-post">
+                <span class="btn-label">Insertar Registro (minimal)</span>
+              </button>
+              <button type="reset" class="btn btn-secondary btn-sm">Limpiar Formulario</button>
+              <button type="button" class="btn btn-ghost btn-clear" data-result="res-post-minimal">Limpiar Resultado</button>
+            </div>
+          </form>
+
+          <div class="result-panel" id="res-post-minimal">
+            <div class="empty-state">Completa el formulario y presiona <strong>Insertar Registro</strong>.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 7. POST Upsert (Prefer: resolution=merge-duplicates)         -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-post-upsert">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge post">POST</span>
+              <h3>7. Upsert Capacitación (Crear o Actualizar)</h3>
+              <code class="endpoint-path">Prefer: resolution=merge-duplicates</code>
+            </div>
+            <p class="card-desc">Inserta o fusiona si la clave única ya existe usando <code>resolution=merge-duplicates</code>.</p>
+          </div>
+
+          <form class="endpoint-form" id="form-post-upsert">
+            <div class="form-row three-cols">
+              <div class="field">
+                <label for="upsert-id">ID (para actualizar si existe)</label>
+                <input type="text" id="upsert-id" placeholder="Ej: 1" />
+              </div>
+              <div class="field">
+                <label for="upsert-titulo">Título <span class="req">*</span></label>
+                <input type="text" id="upsert-titulo" required placeholder="Ej: JavaScript Avanzado" />
+              </div>
+              <div class="field">
+                <label for="upsert-descripcion">Descripción</label>
+                <input type="text" id="upsert-descripcion" placeholder="Ej: Actualización de contenido" />
+              </div>
+            </div>
+
+            <div class="builder-box">
+              <div class="builder-header">
+                <span>Campos adicionales personalizados (opcional)</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-add-upsert-field">+ Agregar campo</button>
+              </div>
+              <div id="upsert-extra-fields" class="dynamic-rows"></div>
+            </div>
+
+            <div class="card-controls">
+              <button type="submit" class="btn btn-post">
+                <span class="btn-label">Ejecutar Upsert</span>
+              </button>
+              <button type="reset" class="btn btn-secondary btn-sm">Limpiar Formulario</button>
+              <button type="button" class="btn btn-ghost btn-clear" data-result="res-post-upsert">Limpiar Resultado</button>
+            </div>
+          </form>
+
+          <div class="result-panel" id="res-post-upsert">
+            <div class="empty-state">Ingresa los datos y presiona <strong>Ejecutar Upsert</strong>.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 8. PATCH Actualizar Registro (Prefer: return=minimal)         -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card" id="ep-patch">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge patch">PATCH</span>
+              <h3>8. Actualizar Capacitación (PATCH)</h3>
+              <code class="endpoint-path">?columna=eq.valor &amp; Prefer: return=minimal</code>
+            </div>
+            <p class="card-desc">Actualiza columnas específicas de un registro existente que coincida con el filtro de columna.</p>
+          </div>
+
+          <form class="endpoint-form" id="form-patch">
+            <div class="form-row three-cols">
+              <div class="field">
+                <label for="patch-col-filter">Columna Filtro <span class="req">*</span></label>
+                <input type="text" id="patch-col-filter" required value="id" />
+              </div>
+              <div class="field">
+                <label for="patch-val-filter">Valor Filtro <span class="req">*</span></label>
+                <input type="text" id="patch-val-filter" required placeholder="Ej: 1" />
+              </div>
+              <div class="field">
+                <label for="patch-titulo">Nuevo Título</label>
+                <input type="text" id="patch-titulo" placeholder="Ej: Título actualizado" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="patch-descripcion">Nueva Descripción</label>
+              <textarea id="patch-descripcion" rows="2" placeholder="Ej: Descripción modificada mediante PATCH"></textarea>
+            </div>
+
+            <div class="builder-box">
+              <div class="builder-header">
+                <span>Otros campos a modificar (clave / valor)</span>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-add-patch-field">+ Agregar campo</button>
+              </div>
+              <div id="patch-extra-fields" class="dynamic-rows"></div>
+            </div>
+
+            <div class="card-controls">
+              <button type="submit" class="btn btn-patch">
+                <span class="btn-label">Ejecutar PATCH</span>
+              </button>
+              <button type="reset" class="btn btn-secondary btn-sm">Limpiar Formulario</button>
+              <button type="button" class="btn btn-ghost btn-clear" data-result="res-patch">Limpiar Resultado</button>
+            </div>
+          </form>
+
+          <div class="result-panel" id="res-patch">
+            <div class="empty-state">Especifica el filtro y los campos a actualizar.</div>
+          </div>
+        </article>
+
+        <!-- ============================================================= -->
+        <!-- 9. DELETE                                                    -->
+        <!-- ============================================================= -->
+        <article class="endpoint-card danger-accent" id="ep-delete">
+          <div class="card-header">
+            <div class="card-title-row">
+              <span class="method-badge delete">DELETE</span>
+              <h3>9. Eliminar Capacitación</h3>
+              <code class="endpoint-path">?columna=operador.valor</code>
+            </div>
+            <p class="card-desc">Elimina registros que coincidan con el filtro especificado (ejemplo: <code>?id=eq.5</code>).</p>
+          </div>
+
+          <form class="endpoint-form" id="form-delete">
+            <div class="form-row three-cols">
+              <div class="field">
+                <label for="del-column">Columna <span class="req">*</span></label>
+                <input type="text" id="del-column" required value="id" />
+              </div>
+              <div class="field">
+                <label for="del-operator">Operador</label>
+                <select id="del-operator">
+                  <option value="eq" selected>eq (Igual a)</option>
+                  <option value="neq">neq (Diferente de)</option>
+                  <option value="ilike">ilike (Contiene)</option>
+                  <option value="like">like (Sensible)</option>
+                  <option value="gt">gt (Mayor que)</option>
+                  <option value="lt">lt (Menor que)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="del-value">Valor <span class="req">*</span></label>
+                <input type="text" id="del-value" required placeholder="Ej: 10" />
+              </div>
+            </div>
+
+            <label class="checkbox-confirm">
+              <input type="checkbox" id="del-confirm" required />
+              <span>Confirmo que deseo eliminar el/los registro(s) que coincidan con este criterio.</span>
+            </label>
+
+            <div class="card-controls">
+              <button type="submit" class="btn btn-danger">
+                <span class="btn-label">Eliminar Registro(s)</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-clear" data-result="res-delete">Limpiar Resultado</button>
+            </div>
+          </form>
+
+          <div class="result-panel" id="res-delete">
+            <div class="empty-state">Especifica la columna y valor del registro a eliminar.</div>
+          </div>
+        </article>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: INSERTAR NUEVA CAPACITACIÓN                          -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="modal-insert" role="dialog" aria-modal="true" aria-labelledby="modal-insert-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-insert-title">➕ Insertar Nueva Capacitación</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-insert-modal" aria-label="Cerrar modal">✕</button>
+      </div>
+      <form id="form-modal-insert" class="endpoint-form">
+        <div class="field">
+          <label for="modal-insert-titulo">Título <span class="req">*</span></label>
+          <input type="text" id="modal-insert-titulo" required placeholder="Ej: Curso de TypeScript y APIs" />
+        </div>
+        <div class="field">
+          <label for="modal-insert-descripcion">Descripción</label>
+          <textarea id="modal-insert-descripcion" rows="3" placeholder="Ej: Buenas prácticas de desarrollo frontend y testing..."></textarea>
+        </div>
+
+        <div class="builder-box">
+          <div class="builder-header">
+            <span>Campos adicionales (opcional)</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-modal-insert-field">+ Campo</button>
+          </div>
+          <div id="modal-insert-extra-fields" class="dynamic-rows"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-insert-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <span class="btn-label">Guardar Registro</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: EDITAR CAPACITACIÓN (PATCH)                          -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="modal-edit" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-edit-title">✏️ Editar Capacitación <span id="modal-edit-id-badge" class="data-pill"></span></h3>
+        <button type="button" class="modal-close-btn" id="btn-close-edit-modal" aria-label="Cerrar modal">✕</button>
+      </div>
+      <form id="form-modal-edit" class="endpoint-form">
+        <input type="hidden" id="modal-edit-id" />
+        <div class="field">
+          <label for="modal-edit-titulo">Título <span class="req">*</span></label>
+          <input type="text" id="modal-edit-titulo" required />
+        </div>
+        <div class="field">
+          <label for="modal-edit-descripcion">Descripción</label>
+          <textarea id="modal-edit-descripcion" rows="3"></textarea>
+        </div>
+
+        <div class="builder-box">
+          <div class="builder-header">
+            <span>Campos adicionales para actualizar</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-modal-edit-field">+ Campo</button>
+          </div>
+          <div id="modal-edit-extra-fields" class="dynamic-rows"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit-modal">Cancelar</button>
+          <button type="submit" class="btn btn-patch">
+            <span class="btn-label">Guardar Cambios (PATCH)</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <script defer src="js/config.js"></script>
+  <script defer src="js/endpoints.js"></script>
+  <script defer src="js/ui.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>
